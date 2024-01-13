@@ -10,8 +10,9 @@ interface MovieApi {
 
     @GET(Constants.API_ENDPOINT_TRENDING)
     suspend fun getTrendingList(
-        @Path(Constants.PATH_TIME_WINDOW) timeSeries: Constants.TimeWindow,
+        @Path(Constants.PATH_TIME_WINDOW) timeSeries: String,
         @Query(Constants.QUERY_PARAM_LANGUAGE) language: String = Constants.DEFAULT_LANGUAGE,
+        @Query(Constants.QUERY_PARAM_PAGE) pageNumber: Int = 1,
         @Query(Constants.QUERY_PARAM_API_KEY) apiKey: String = Constants.API_KEY
     ): TrendingData
 

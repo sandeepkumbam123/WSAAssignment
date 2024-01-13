@@ -1,30 +1,34 @@
 package com.example.wsaassignment.data.model
 
-data class TrendingData(
-    val page: Int,
-    val results: List<Result>,
-    val totalPages: Int,
-    val total_results: Int
-)
+import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
+import kotlinx.android.parcel.Parcelize
 
-data class Result(
-    val adult: Boolean,
-    val backdrop_path: String,
-    val first_air_date: String,
-    val genre_ids: List<Int>,
-    val id: Int,
-    val media_type: String,
-    val name: String,
-    val origin_country: List<String>,
-    val original_language: String,
-    val original_name: String,
-    val original_title: String,
-    val overview: String,
-    val popularity: Double,
-    val poster_path: String,
-    val release_date: String,
-    val title: String,
-    val video: Boolean,
-    val vote_average: Double,
-    val vote_count: Int
-)
+@Parcelize
+data class TrendingData(
+    @SerializedName("page") var page: Int? = null,
+    @SerializedName("results") var results: ArrayList<SeriesResult> = arrayListOf(),
+    @SerializedName("total_pages") var totalPages: Int? = null,
+    @SerializedName("total_results") var totalResults: Int? = null
+
+) : Parcelable
+
+@Parcelize
+data class SeriesResult(
+    @SerializedName("adult") var adult: Boolean? = null,
+    @SerializedName("backdrop_path") var backdropPath: String? = null,
+    @SerializedName("id") var id: Int? = null,
+    @SerializedName("title") var title: String? = null,
+    @SerializedName("original_language") var originalLanguage: String? = null,
+    @SerializedName("original_title") var originalTitle: String? = null,
+    @SerializedName("overview") var overview: String? = null,
+    @SerializedName("poster_path") var posterPath: String? = null,
+    @SerializedName("media_type") var mediaType: String? = null,
+    @SerializedName("genre_ids") var genreIds: ArrayList<Int> = arrayListOf(),
+    @SerializedName("popularity") var popularity: Double? = null,
+    @SerializedName("release_date") var releaseDate: String? = null,
+    @SerializedName("video") var video: Boolean? = null,
+    @SerializedName("vote_average") var voteAverage: Double? = null,
+    @SerializedName("vote_count") var voteCount: Int? = null
+
+) : Parcelable

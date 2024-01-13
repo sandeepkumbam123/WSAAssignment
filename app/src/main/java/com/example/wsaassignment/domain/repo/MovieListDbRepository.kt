@@ -5,7 +5,7 @@ import com.example.wsaassignment.util.Constants
 
 interface MovieListDbRepository {
 
-    suspend fun getTrendingMovieList(timeWindow: Constants.TimeWindow, language: String) : TrendingData
+    suspend fun getTrendingMovieList(timeWindow: String, language: String, pageNumber: Int) : TrendingData
 
     suspend fun getSearchMovieList(
         searchQuery: String,

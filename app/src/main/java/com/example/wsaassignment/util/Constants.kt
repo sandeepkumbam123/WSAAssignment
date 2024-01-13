@@ -6,9 +6,12 @@ class Constants {
 
 
         //API END POINT
-        const val BASE_URL = "https://developers.themoviedb.org/3/"
+        const val BASE_URL = "https://api.themoviedb.org/3/"//"https://developers.themoviedb.org/3/"
 
-        const val API_ENDPOINT_TRENDING = "trending/all/"
+        //IMAGE_URL ENDPOINT
+        const val IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original/"
+
+        const val API_ENDPOINT_TRENDING = "trending/all/{${Constants.PATH_TIME_WINDOW}}"
         const val API_ENDPOINT_SEARCH = "search/tv"
         const val API_ENDPOINT_SIMILAR_SHOWS = "tv/{${Constants.QUERY_PARAM_SERIES_ID}}"
 

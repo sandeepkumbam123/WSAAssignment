@@ -8,8 +8,9 @@ import javax.inject.Inject
 
 class MovieListRepoImpl @Inject constructor(val remoteDataSource: RemoteDataSource) : MovieListDbRepository {
     override suspend fun getTrendingMovieList(
-        timeWindow: Constants.TimeWindow,
-        language: String
+        timeWindow: String,
+        language: String,
+        pageNumber: Int
     ): TrendingData = remoteDataSource.getTrendingList(timeWindow,language)
 
     override suspend fun getSearchMovieList(
