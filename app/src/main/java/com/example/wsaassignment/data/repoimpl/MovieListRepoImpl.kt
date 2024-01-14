@@ -22,4 +22,6 @@ class MovieListRepoImpl @Inject constructor(val remoteDataSource: RemoteDataSour
         includeAdult: Boolean
     ): TrendingData = remoteDataSource.getSearchList(searchQuery,pageNumber,language,year,includeAdult,firstAirDate)
 
+    override suspend fun getSimilarShows(seriesId: Int): TrendingData = remoteDataSource.getSimilarShows(seriesId, pageNumber = 1)
+
 }

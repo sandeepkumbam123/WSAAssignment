@@ -15,4 +15,6 @@ interface MovieListDbRepository {
         firstAirDate: String,
         includeAdult: Boolean
     ) : TrendingData
+
+    suspend fun getSimilarShows( seriesId : Int) : TrendingData
 }

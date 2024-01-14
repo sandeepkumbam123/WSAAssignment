@@ -29,10 +29,10 @@ interface MovieApi {
 
     @GET(Constants.API_ENDPOINT_SIMILAR_SHOWS)
     suspend fun getSimilarShows(
-        @Path(Constants.QUERY_PARAM_SERIES_ID) seriesId: String,
+        @Path(Constants.QUERY_PARAM_SERIES_ID) seriesId: Int,
         @Query(Constants.QUERY_PARAM_PAGE) pageNumber: Int = 1,
         @Query(Constants.QUERY_PARAM_LANGUAGE) language: String = Constants.DEFAULT_LANGUAGE,
         @Query(Constants.QUERY_PARAM_API_KEY) apiKey: String = Constants.API_KEY
-    )
+    ) : TrendingData
 
 }

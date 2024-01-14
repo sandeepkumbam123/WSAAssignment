@@ -1,5 +1,6 @@
 package com.example.wsaassignment
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,43 +24,25 @@ class MainActivity : ComponentActivity() {
 
     val viewModel: MainViewModel by viewModels()
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val nextScreen = { screenContent: SeriesResult ->
-            redirectTo(screenContent)
-        }
+
         setContent {
             WSAAssignmentTheme {
                 // A surface container using the 'background' color from the theme
 
-                val redirectTo by rememberUpdatedState(newValue = nextScreen)
                 TrendingVerticalGrid(
                     viewModel = viewModel,
-                    redirectTo = redirectTo,
+                    redirectTo = { redirectTo(it) },
                     lazyLoad = { viewModel.lazyLoadElements() })
             }
         }
     }
-}
-
-fun redirectTo(seriesResult: SeriesResult) {
-
-}
 
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    WSAAssignmentTheme {
-        Greeting("Android")
+    private fun redirectTo(seriesResult: SeriesResult) {
+        val intent = Intent(this@MainActivity, DetailsActivity::class.java)
+        intent.putExtras(DetailsActivity.getExtras(seriesResult))
+        startActivity(intent)
     }
 }

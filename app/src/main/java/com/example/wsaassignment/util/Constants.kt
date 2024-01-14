@@ -13,7 +13,7 @@ class Constants {
 
         const val API_ENDPOINT_TRENDING = "trending/all/{${Constants.PATH_TIME_WINDOW}}"
         const val API_ENDPOINT_SEARCH = "search/tv"
-        const val API_ENDPOINT_SIMILAR_SHOWS = "tv/{${Constants.QUERY_PARAM_SERIES_ID}}"
+        const val API_ENDPOINT_SIMILAR_SHOWS = "tv/{${Constants.QUERY_PARAM_SERIES_ID}}/similar"
 
         //Query Parameters
         const val QUERY_PARAM_API_KEY = "api_key"
