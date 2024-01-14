@@ -39,6 +39,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.fetchFavoritesMovieList()
+    }
 
     private fun redirectTo(seriesResult: SeriesResult) {
         val intent = Intent(this@MainActivity, DetailsActivity::class.java)

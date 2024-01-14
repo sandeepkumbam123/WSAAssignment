@@ -41,6 +41,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.wsaassignment.R
 import com.example.wsaassignment.dao.entities.FavoriteMovieData
@@ -55,7 +56,7 @@ import com.example.wsaassignment.util.Constants
 fun SetupTrendingItemComponent(
     seriesData: SeriesResult,
     redirectTo: (data: SeriesResult) -> Unit,
-    favoriteMovie: List<FavoriteMovieData>
+    viewModel: MainViewModel
 ) {
     Column(
         modifier = Modifier
@@ -90,8 +91,11 @@ fun SetupTrendingItemComponent(
                     contentDescription = "Trending"
                 )
             }
-            val isFavorite = favoriteMovie.find { it.seriesData.id == seriesData.id }
-            FavoriteButton(modifier = Modifier.padding(2.dp).padding(top= 15.dp).height(8.dp), isFavorite = isFavorite != null)
+
+            FavoriteButton(modifier = Modifier
+                .padding(2.dp)
+                .padding(top = 15.dp)
+                .height(8.dp), viewModel =  viewModel, seriesData =  seriesData)
         }
         val nameSeries = seriesData.originalName ?: seriesData.name ?: seriesData.originalTitle
         ?: seriesData.title ?: Constants.BLANK
@@ -121,7 +125,6 @@ fun TrendingVerticalGrid(
     lazyLoad: () -> Unit
 ) {
     val trendingData by viewModel.trendingMovieList.collectAsState()
-    val favoriteMovieData by viewModel.favoriteMovieDataList.collectAsStateWithLifecycle()
     trendingData?.let {
         LazyVerticalGrid(columns = cells, contentPadding = contentPadding) {
             items(it.results.size) { item ->
@@ -133,8 +136,8 @@ fun TrendingVerticalGrid(
                     SetupTrendingItemComponent(
                         seriesData = it.results[item],
                         redirectTo = redirectTo,
-                        favoriteMovieData
-                    )
+                        viewModel = viewModel
+                        )
                 }
             }
         }
@@ -194,10 +197,11 @@ fun SearchScreen(
 fun FavoriteButton(
     modifier: Modifier = Modifier,
     color: Color = Color.White,
-    isFavorite: Boolean
+    viewModel: MainViewModel,
+    seriesData: SeriesResult
 ) {
-
-
+    val favoriteMovies  by viewModel.favoriteMovieDataList.collectAsStateWithLifecycle()
+    val isFavorite = favoriteMovies.find { it.seriesData.id == seriesData.id } != null
     IconToggleButton(
         checked = isFavorite,
         onCheckedChange = {
