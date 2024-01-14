@@ -30,8 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.wsaassignment.R
@@ -69,13 +71,14 @@ fun DetailsScreenCard(click: (Int) -> Unit, viewModel: DetailsViewModel) {
                     contentScale = ContentScale.Fit
                 )
             }
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 (it.title ?: (it.originalTitle ?: (it.name ?: it.originalName)))?.let { it1 ->
                     Text(
                         text = it1,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
-                            .wrapContentWidth()
+                            .width(300.dp)
                             .wrapContentHeight()
                             .padding(5.dp, 5.dp),
                         style = titleLarge
@@ -84,6 +87,7 @@ fun DetailsScreenCard(click: (Int) -> Unit, viewModel: DetailsViewModel) {
                 val isSeriesFavoriteinDetails = viewModel.isSeriesFavorited.collectAsStateWithLifecycle()
                 val imageModifier = Modifier
                     .size(25.dp)
+                    .width(15.dp)
                     .wrapContentSize()
                     .padding(horizontal = 5.dp, vertical = 5.dp)
                     .clickable {

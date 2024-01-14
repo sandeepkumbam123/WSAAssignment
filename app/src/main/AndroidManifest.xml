@@ -18,7 +18,7 @@
         android:theme="@style/Theme.WSAAssignment"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".presentation.view.activities.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.WSAAssignment">
@@ -28,7 +28,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DetailsActivity"/>
+        <activity android:name=".presentation.view.activities.DetailsActivity"/>
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package com.example.wsaassignment
+package com.example.wsaassignment.presentation.view.activities
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

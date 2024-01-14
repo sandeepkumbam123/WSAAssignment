@@ -1,17 +1,10 @@
-package com.example.wsaassignment
+package com.example.wsaassignment.presentation.view.activities
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.wsaassignment.data.model.SeriesResult
 import com.example.wsaassignment.presentation.view.compose.TrendingVerticalGrid
 import com.example.wsaassignment.presentation.viewmodel.MainViewModel
