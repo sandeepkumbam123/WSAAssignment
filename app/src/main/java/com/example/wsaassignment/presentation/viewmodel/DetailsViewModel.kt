@@ -4,6 +4,8 @@ import android.os.Parcelable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.wsaassignment.dao.FavoritesDao
+import com.example.wsaassignment.dao.entities.FavoriteMovieData
 import com.example.wsaassignment.data.model.SeriesResult
 import com.example.wsaassignment.data.model.TrendingData
 import com.example.wsaassignment.domain.usecase.SeriesDataUseCase
@@ -15,30 +17,39 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailsViewModel @Inject constructor(
     val savedStateHandle: SavedStateHandle,
-    val detailsUseCase: SeriesDataUseCase
+    val detailsUseCase: SeriesDataUseCase,
+    val favoritesDao: FavoritesDao
 ) : ViewModel() {
 
-    private val _seriesResultValue = MutableStateFlow<SeriesResult?>(null)
-    val seriesResultData
-        get() = _seriesResultValue
+    val seriesResultData : SeriesResult?
+        get() = savedStateHandle.get<SeriesResult>(keyTrendingSeriesData)
 
     private val _similarSeriesData = MutableStateFlow<TrendingData?>(null)
     val similarSeriesInfo
         get() = _similarSeriesData
+
+    private val _favoriteMovieList = MutableStateFlow<List<FavoriteMovieData?>>(emptyList())
+    val favoriteMovieList
+        get() = _favoriteMovieList
+
+    private val _isSeriesFavorite = MutableStateFlow(false)
+    val isSeriesFavorited
+        get() = _isSeriesFavorite
 
     companion object {
         const val keyTrendingSeriesData = "SeriesData"
     }
 
     init {
+        favoriteMovies()
         loadDetailsScreenData()
     }
 
 
     private fun loadDetailsScreenData() {
-        savedStateHandle.get<SeriesResult>(keyTrendingSeriesData)?.let {
-            _seriesResultValue.value = it
-            it.id?.let { seriesId -> fetchSimilarSeriesData(seriesId) }
+        fetchSimilarSeriesData(seriesResultData?.id ?: 0)
+        if (_favoriteMovieList.value.isNotEmpty()) {
+            isFavoriteMovieFunction(seriesResultData?.id ?: 0)
         }
     }
 
@@ -52,4 +63,20 @@ class DetailsViewModel @Inject constructor(
             )
         }
     }
+
+    fun isFavoriteMovieFunction(favoriteMovieId: Int) {
+        _isSeriesFavorite.value =
+            _favoriteMovieList.value.filter { favoriteMovieData -> favoriteMovieData?.seriesData?.id == favoriteMovieId }
+                .isNotEmpty()
+
+    }
+
+    fun updateFavoriteMovie(seriesId: SeriesResult) {
+        viewModelScope.launch {
+            favoritesDao.insert(FavoriteMovieData(true, seriesId))
+        }
+    }
+
+    private fun favoriteMovies(): List<FavoriteMovieData> {_favoriteMovieList.value = favoritesDao.getAllFavorites()
+    return favoritesDao.getAllFavorites()}
 }

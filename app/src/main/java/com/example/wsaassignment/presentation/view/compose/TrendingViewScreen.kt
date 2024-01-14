@@ -1,10 +1,18 @@
 package com.example.wsaassignment.presentation.view.compose
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -25,16 +33,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.wsaassignment.R
 import com.example.wsaassignment.data.model.SeriesResult
 import com.example.wsaassignment.presentation.view.compose.common.RemoteImage
 import com.example.wsaassignment.presentation.viewmodel.MainViewModel
 import com.example.wsaassignment.ui.theme.labelSmall
 import com.example.wsaassignment.ui.theme.titleLarge
 import com.example.wsaassignment.util.Constants
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,56 +54,61 @@ fun SetupTrendingItemComponent(
     seriesData: SeriesResult,
     redirectTo: (data: SeriesResult) -> Unit
 ) {
-    Card(
+    Column(
         modifier = Modifier
-            .aspectRatio(9f/16f)
-            .padding(vertical = 10.dp, horizontal = 5.dp)
-            .fillMaxWidth(),
-        onClick = {
-            redirectTo(seriesData)
-        }, shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(6.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White,
-            contentColor = Color.White
-        )
+            .fillMaxWidth()
+            .wrapContentSize()
+            .padding(horizontal = 5.dp)
+            .padding(top = 5.dp)
     ) {
-        RemoteImage(
-            url = Constants.IMAGE_BASE_URL + seriesData.posterPath,
-            modifier = Modifier
-                .wrapContentHeight()
-                .fillMaxWidth(),
-            contentScale = ContentScale.Fit,
-            contentDescription = "Trending"
-        )
 
+        Card(
+            modifier = Modifier
+                .aspectRatio(9f / 16f)
+                .fillMaxWidth()
+                .wrapContentSize(),
+            onClick = {
+                redirectTo(seriesData)
+            }, shape = RoundedCornerShape(10.dp),
+            elevation = CardDefaults.cardElevation(2.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White,
+                contentColor = Color.White
+            )
+        ) {
+            RemoteImage(
+                url = Constants.IMAGE_BASE_URL + seriesData.posterPath,
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth(),
+                contentScale = ContentScale.Fit,
+                contentDescription = "Trending"
+            )
+        }
+        val nameSeries = seriesData.originalName ?: seriesData.name ?: seriesData.originalTitle ?: seriesData.title ?: Constants.BLANK
         Text(
-            text = seriesData.originalTitle.toString(),
-            style = titleLarge,
-            modifier = Modifier.padding(vertical = 5.dp).fillMaxWidth(),
-            textAlign = TextAlign.Center,
+            text = nameSeries,
+            style = labelSmall,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp),
+            textAlign = TextAlign.Start,
             maxLines = 1
         )
-
-        Text(
-            text = seriesData.voteAverage.toString(),
-            style = labelSmall,
-            modifier = Modifier.padding(vertical = 2.dp).fillMaxWidth(),
-            textAlign =  TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+        seriesData.voteAverage?.let {
+            RatingView(rating = it)
+        }
     }
 }
 
 @Composable
 fun TrendingVerticalGrid(
-    cells: GridCells = GridCells.Fixed(2),
+    cells: GridCells = GridCells.Fixed(3),
     state: LazyListState = rememberLazyListState(),
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = PaddingValues(5.dp),
     redirectTo: (data: SeriesResult) -> Unit,
-    viewModel : MainViewModel,
-    lazyLoad : () -> Unit
+    viewModel: MainViewModel,
+    lazyLoad: () -> Unit
 ) {
     val trendingData by viewModel.trendingMovieList.collectAsState()
     trendingData?.let {
@@ -108,6 +125,23 @@ fun TrendingVerticalGrid(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun RatingView(rating : Double) {
+    Row (modifier = Modifier.wrapContentSize().padding(horizontal = 5.dp)){
+        val imageModifier = Modifier
+            .height(height = 10.dp)
+        for (index in 0 until   5) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_rating_drawable),
+                contentDescription = "Rating",
+                contentScale = ContentScale.Fit,
+                modifier = imageModifier,
+                colorFilter = ColorFilter.tint(if (index > rating/2)Color.Gray else Color.Red)
+            )
         }
     }
 }
