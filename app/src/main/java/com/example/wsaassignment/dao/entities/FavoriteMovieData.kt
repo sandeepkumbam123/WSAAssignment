@@ -9,9 +9,8 @@ import com.example.wsaassignment.util.SeriesConverters
 
 @Entity(tableName = "FavoriteTable")
 class FavoriteMovieData(
-    @ColumnInfo(name = "isFavorite") val isFavorite: Boolean = false,
     @TypeConverters(SeriesConverters::class)
     @ColumnInfo(name = "seriesResult") val seriesData: SeriesResult
 ) {
-    @PrimaryKey(autoGenerate = true) var tableId = 0
+    @PrimaryKey(autoGenerate = false) var tableId = seriesData.id
 }

@@ -8,6 +8,7 @@ import com.example.wsaassignment.dao.FavoritesDao
 import com.example.wsaassignment.dao.entities.FavoriteMovieData
 import com.example.wsaassignment.data.model.SeriesResult
 import com.example.wsaassignment.data.model.TrendingData
+import com.example.wsaassignment.domain.usecase.FavoriteMovieUseCase
 import com.example.wsaassignment.domain.usecase.SeriesDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,10 +19,11 @@ import javax.inject.Inject
 class DetailsViewModel @Inject constructor(
     val savedStateHandle: SavedStateHandle,
     val detailsUseCase: SeriesDataUseCase,
+    val favoritesUseCase: FavoriteMovieUseCase,
     val favoritesDao: FavoritesDao
 ) : ViewModel() {
 
-    val seriesResultData : SeriesResult?
+    val seriesResultData: SeriesResult?
         get() = savedStateHandle.get<SeriesResult>(keyTrendingSeriesData)
 
     private val _similarSeriesData = MutableStateFlow<TrendingData?>(null)
@@ -48,9 +50,6 @@ class DetailsViewModel @Inject constructor(
 
     private fun loadDetailsScreenData() {
         fetchSimilarSeriesData(seriesResultData?.id ?: 0)
-        if (_favoriteMovieList.value.isNotEmpty()) {
-            isFavoriteMovieFunction(seriesResultData?.id ?: 0)
-        }
     }
 
     private fun fetchSimilarSeriesData(seriesId: Int) {
@@ -64,19 +63,43 @@ class DetailsViewModel @Inject constructor(
         }
     }
 
-    fun isFavoriteMovieFunction(favoriteMovieId: Int) {
-        _isSeriesFavorite.value =
-            _favoriteMovieList.value.filter { favoriteMovieData -> favoriteMovieData?.seriesData?.id == favoriteMovieId }
-                .isNotEmpty()
-
-    }
-
-    fun updateFavoriteMovie(seriesId: SeriesResult) {
-        viewModelScope.launch {
-            favoritesDao.insert(FavoriteMovieData(true, seriesId))
+    fun fetchFavoriteMovies() = viewModelScope.launch {
+        seriesResultData?.let { seriesResult ->
+            favoritesUseCase<List<FavoriteMovieData?>>(
+                scope = viewModelScope,
+                FavoriteMovieUseCase.GetFavoriteMoviesMP.GetFavoriteMoviesCrudData(
+                    FavoriteMovieData(seriesResult)
+                ),
+                onSuccess = {
+                    _favoriteMovieList.value = it
+                    _favoriteMovieList.value.let { seriesList ->
+                        run {
+                            val filterList =
+                                seriesList.find { it?.seriesData?.id == seriesResultData?.id }
+                            _isSeriesFavorite.value = filterList != null
+                        }
+                    }
+                },
+                onError = null
+            )
         }
     }
 
-    private fun favoriteMovies(): List<FavoriteMovieData> {_favoriteMovieList.value = favoritesDao.getAllFavorites()
-    return favoritesDao.getAllFavorites()}
+    private fun favoriteMovies() = viewModelScope.launch {
+        favoritesUseCase<List<FavoriteMovieData>>(
+            viewModelScope,
+            FavoriteMovieUseCase.GetFavoriteMoviesMP.GetFavoriteMovieList,
+            onSuccess = {
+                _favoriteMovieList.value = it
+                _favoriteMovieList.value.let { seriesList ->
+                    run {
+                        val filterList =
+                            seriesList.find {  it?.seriesData?.id == seriesResultData?.id }
+                        _isSeriesFavorite.value = filterList != null
+                    }
+                }
+            },
+            onError = null
+        )
+    }
 }

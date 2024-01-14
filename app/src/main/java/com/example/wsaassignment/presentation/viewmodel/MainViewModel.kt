@@ -2,7 +2,9 @@ package com.example.wsaassignment.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.wsaassignment.dao.entities.FavoriteMovieData
 import com.example.wsaassignment.data.model.TrendingData
+import com.example.wsaassignment.domain.usecase.FavoriteMovieUseCase
 import com.example.wsaassignment.domain.usecase.TrendingMovieListUseCase
 import com.example.wsaassignment.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,15 +13,21 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val trendingMoviesUseCase: TrendingMovieListUseCase) :
+class MainViewModel @Inject constructor(private val trendingMoviesUseCase: TrendingMovieListUseCase,
+    private val favoriteMovieUseCase: FavoriteMovieUseCase) :
     ViewModel() {
 
     private val _trendingMoviesList = MutableStateFlow<TrendingData?>(null)
     val trendingMovieList
         get() = _trendingMoviesList
 
+    private val _favoriteMoviesList = MutableStateFlow<List<FavoriteMovieData>>(emptyList())
+    val favoriteMovieDataList
+        get() = _favoriteMoviesList
+
     init {
         fetchMovies()
+        fetchFavoritesMovieList()
     }
 
     fun lazyLoadElements() {
@@ -54,5 +62,11 @@ class MainViewModel @Inject constructor(private val trendingMoviesUseCase: Trend
                 onError = null
             )
         }
+    }
+
+    fun fetchFavoritesMovieList() = viewModelScope.launch {
+        favoriteMovieUseCase<List<FavoriteMovieData>>(viewModelScope,FavoriteMovieUseCase.GetFavoriteMoviesMP.GetFavoriteMovieList,
+            onSuccess = {movieList -> _favoriteMoviesList.value = movieList},
+            onError = null)
     }
 }

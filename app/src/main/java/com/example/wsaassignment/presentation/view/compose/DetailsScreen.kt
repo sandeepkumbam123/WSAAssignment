@@ -33,6 +33,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.wsaassignment.R
 import com.example.wsaassignment.presentation.view.compose.common.RemoteImage
 import com.example.wsaassignment.presentation.viewmodel.DetailsViewModel
@@ -80,17 +81,13 @@ fun DetailsScreenCard(click: (Int) -> Unit, viewModel: DetailsViewModel) {
                         style = titleLarge
                     )
                 }
-                val isSeriesFavoriteinDetails = viewModel.isSeriesFavorited.collectAsState()
+                val isSeriesFavoriteinDetails = viewModel.isSeriesFavorited.collectAsStateWithLifecycle()
                 val imageModifier = Modifier
                     .size(25.dp)
                     .wrapContentSize()
                     .padding(horizontal = 5.dp, vertical = 5.dp)
                     .clickable {
-                        seriesInfo.let { it1 ->
-                            viewModel.updateFavoriteMovie(
-                                it1
-                            )
-                        }
+                        viewModel.fetchFavoriteMovies()
                     }
                 Image(
                     painter = painterResource(id = R.drawable.ic_favorite),

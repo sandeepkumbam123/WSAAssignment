@@ -15,13 +15,13 @@ interface FavoritesDao {
     suspend fun insert(favorite: FavoriteMovieData)
 
     @Update
-    fun update(note: FavoriteMovieData)
+    suspend fun update(note: FavoriteMovieData)
 
     @Delete
-    fun delete(note: FavoriteMovieData)
+    suspend fun delete(note: FavoriteMovieData)
 
-    @Query("delete from FavoriteTable")
-    fun deleteAllFavorites()
+    @Query("DELETE FROM FavoriteTable WHERE tableId = :id")
+    suspend fun deleteById(id : Int)
 
     @Query("select * from FavoriteTable")
     fun getAllFavorites(): List<FavoriteMovieData>
