@@ -9,11 +9,11 @@ interface MovieListDbRepository {
 
     suspend fun getSearchMovieList(
         searchQuery: String,
-        pageNumber: Int,
-        language: String,
-        year: String,
-        firstAirDate: String,
-        includeAdult: Boolean
+        pageNumber: Int = 1,
+        language: String = Constants.DEFAULT_LANGUAGE,
+        year: String = Constants.BLANK,
+        firstAirDate: String = Constants.BLANK,
+        includeAdult: Boolean = false
     ) : TrendingData
 
     suspend fun getSimilarShows( seriesId : Int) : TrendingData

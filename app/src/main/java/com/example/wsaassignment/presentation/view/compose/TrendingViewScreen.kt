@@ -1,7 +1,6 @@
 package com.example.wsaassignment.presentation.view.compose
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,7 +22,6 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconToggleButton
@@ -41,10 +39,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.wsaassignment.R
-import com.example.wsaassignment.dao.entities.FavoriteMovieData
 import com.example.wsaassignment.data.model.SeriesResult
 import com.example.wsaassignment.presentation.view.compose.common.RemoteImage
 import com.example.wsaassignment.presentation.viewmodel.MainViewModel
@@ -222,23 +218,30 @@ fun FavoriteButton(
 
 }
 
-//@ExperimentalMaterial3Api
-//@Composable
-//fun SearchBar(
-//    query: String,
-//    onQueryChange: (String) -> Unit,
-//    onSearch: (String) -> Unit,
-//    active: Boolean,
-//    onActiveChange: (Boolean) -> Unit,
-//    modifier: Modifier = Modifier,
-//    enabled: Boolean = true,
-//    placeholder: @Composable (() -> Unit)? = null,
-//    leadingIcon: @Composable (() -> Unit)? = null,
-//    trailingIcon: @Composable (() -> Unit)? = null,
-//    shape: Shape = SearchBarDefaults.inputFieldShape,
-//    colors: SearchBarColors = SearchBarDefaults.colors(),
-//    tonalElevation: Dp = SearchBarDefaults.Elevation,
-//    windowInsets: WindowInsets = SearchBarDefaults.windowInsets,
-//    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-//    content: @Composable ColumnScope.() -> Unit,
-//)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchBarUI(viewModel: MainViewModel, redirectTo: (data: SeriesResult) -> Unit) {
+
+    val searchText by viewModel.searchText.collectAsState()
+    val isSearching by viewModel.isSearching.collectAsState()
+
+    SearchBar(
+        query = searchText,
+        onQueryChange = viewModel::onSearchTextChange,
+        onSearch = viewModel::onSearchTextChange,
+        active = isSearching,
+        onActiveChange = {viewModel.onToogleSearch()},
+        modifier = Modifier.padding(2.dp),
+        placeholder = {
+            Text(text = "Search")
+        },
+        leadingIcon = {
+            Icon(imageVector = Icons.Default.Search, contentDescription = null)
+        }
+    ) {
+        TrendingVerticalGrid(
+            viewModel = viewModel,
+            redirectTo = redirectTo,
+            lazyLoad = { viewModel.lazyLoadElements() })
+    }
+}
