@@ -1,5 +1,8 @@
 package com.example.wsaassignment.presentation.viewmodel
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wsaassignment.dao.entities.FavoriteMovieData
@@ -8,6 +11,7 @@ import com.example.wsaassignment.domain.usecase.FavoriteMovieUseCase
 import com.example.wsaassignment.domain.usecase.SearchUseCase
 import com.example.wsaassignment.domain.usecase.TrendingMovieListUseCase
 import com.example.wsaassignment.util.Constants
+import com.example.wsaassignment.util.toTrendingData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -34,6 +38,10 @@ class MainViewModel @Inject constructor(private val trendingMoviesUseCase: Trend
     //second state the text typed by the user
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText
+
+    private var _error = MutableStateFlow<String>(Constants.BLANK)
+    val error
+        get() = _error
 
     init {
         fetchMovies()
@@ -69,7 +77,11 @@ class MainViewModel @Inject constructor(private val trendingMoviesUseCase: Trend
                         _trendingMoviesList.value = trendingData
                     }
                 },
-                onError = null
+                onError = {throwable,response ->
+                    run {
+                        _error.value = ERROR_HANDLING.API_ERROR.errorType
+                    }
+                }
             )
         }
     }
@@ -92,6 +104,22 @@ class MainViewModel @Inject constructor(private val trendingMoviesUseCase: Trend
         }
     }
 
+    fun isNetworkConnected(context: Context) : Boolean{
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+
+        val connected = connectivityManager!!.getNetworkInfo(ConnectivityManager.TYPE_MOBILE)!!
+            .state == NetworkInfo.State.CONNECTED ||
+                connectivityManager!!.getNetworkInfo(ConnectivityManager.TYPE_WIFI)!!.state == NetworkInfo.State.CONNECTED
+        return connected
+    }
+
+    fun updateTrendingDatainNoNetwork() {
+        if (_favoriteMoviesList.value.isNullOrEmpty().not()) {
+            _trendingMoviesList.value = _favoriteMoviesList.value.toTrendingData()
+        }
+    }
+
     private fun fetchSearchItems(query : String) {
         if (query.isNotEmpty() && query.length >= 2) {
             viewModelScope.launch {
@@ -103,6 +131,10 @@ class MainViewModel @Inject constructor(private val trendingMoviesUseCase: Trend
                     onError = null)
             }
         }
+    }
+
+    enum class ERROR_HANDLING(var errorType : String) {
+        API_ERROR("Something went Wrong")
     }
 }
 

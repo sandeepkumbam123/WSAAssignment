@@ -245,3 +245,15 @@ fun SearchBarUI(viewModel: MainViewModel, redirectTo: (data: SeriesResult) -> Un
             lazyLoad = { viewModel.lazyLoadElements() })
     }
 }
+
+@Composable
+fun errorBody(viewModel: MainViewModel) {
+    val errorMessage = viewModel.error.collectAsStateWithLifecycle()
+    Box(modifier = Modifier
+        .padding(5.dp, 5.dp)) {
+        errorMessage.value.let {
+            Text(text = it, modifier =  Modifier, style = labelSmall )
+
+        }
+    }
+}

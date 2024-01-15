@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import com.example.wsaassignment.data.model.SeriesResult
 import com.example.wsaassignment.presentation.view.compose.SearchBarUI
 import com.example.wsaassignment.presentation.view.compose.TrendingVerticalGrid
+import com.example.wsaassignment.presentation.view.compose.errorBody
 import com.example.wsaassignment.presentation.viewmodel.MainViewModel
 import com.example.wsaassignment.ui.theme.WSAAssignmentTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,7 +27,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        renderUI()
+    }
 
+    private fun renderUI() {
         setContent {
             WSAAssignmentTheme {
                 // A surface container using the 'background' color from the theme
@@ -34,18 +38,24 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        SearchBarUI(viewModel = viewModel, redirectTo = { redirectTo(it) })
-                        TrendingVerticalGrid(
-                            viewModel = viewModel,
-                            redirectTo = { redirectTo(it) },
-                            lazyLoad = { viewModel.lazyLoadElements() })
+                    if (viewModel.isNetworkConnected(this@MainActivity)) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            SearchBarUI(viewModel = viewModel, redirectTo = { redirectTo(it) })
+                            TrendingVerticalGrid(
+                                viewModel = viewModel,
+                                redirectTo = { redirectTo(it) },
+                                lazyLoad = { viewModel.lazyLoadElements() })
+                        }
+                    } else {
+                       viewModel.updateTrendingDatainNoNetwork()
+                        TrendingVerticalGrid(redirectTo = { redirectTo(it) }, viewModel = viewModel, lazyLoad = {viewModel.lazyLoadElements()})
                     }
                 }
-
+                
+                errorBody(viewModel = viewModel)
             }
         }
     }
