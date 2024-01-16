@@ -81,6 +81,7 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
 
     implementation("io.coil-kt:coil-compose:2.4.0")
+
     implementation("io.coil-kt:coil-gif:2.4.0")
     implementation("com.android.support:multidex:1.0.3")
 
@@ -90,6 +91,10 @@ dependencies {
 
     //Material Design 3
     implementation("androidx.compose.material3:material3:1.1.2")
+
+    //Paging Library
+    implementation("androidx.paging:paging-runtime:$3.1.1")
+    implementation("androidx.paging:paging-compose:3.2.1")
     
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

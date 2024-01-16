@@ -4,28 +4,40 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.example.wsaassignment.dao.entities.FavoriteMovieData
+import com.example.wsaassignment.data.model.SeriesResult
 import com.example.wsaassignment.data.model.TrendingData
 import com.example.wsaassignment.domain.usecase.FavoriteMovieUseCase
 import com.example.wsaassignment.domain.usecase.SearchUseCase
 import com.example.wsaassignment.domain.usecase.TrendingMovieListUseCase
 import com.example.wsaassignment.util.Constants
-import com.example.wsaassignment.util.toTrendingData
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val trendingMoviesUseCase: TrendingMovieListUseCase,
+class MainViewModel @Inject constructor(
+    private val trendingMoviesUseCase: TrendingMovieListUseCase,
     private val favoriteMovieUseCase: FavoriteMovieUseCase,
-    private val searchUseCase: SearchUseCase) :
+    private val searchUseCase: SearchUseCase
+) :
     ViewModel() {
 
-    private val _trendingMoviesList = MutableStateFlow<TrendingData?>(null)
+    private val _trendingMoviesList: MutableStateFlow<PagingData<SeriesResult>> =
+        MutableStateFlow(value = PagingData.empty())
     val trendingMovieList
         get() = _trendingMoviesList
+    private val _searchMovieList = MutableStateFlow<List<SeriesResult>>(emptyList())
+    val serchMovieResult
+        get() = _searchMovieList
 
     private val _favoriteMoviesList = MutableStateFlow<List<FavoriteMovieData>>(emptyList())
     val favoriteMovieDataList
@@ -39,7 +51,7 @@ class MainViewModel @Inject constructor(private val trendingMoviesUseCase: Trend
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText
 
-    private var _error = MutableStateFlow<String>(Constants.BLANK)
+    private var _error = MutableStateFlow(Constants.BLANK)
     val error
         get() = _error
 
@@ -48,18 +60,16 @@ class MainViewModel @Inject constructor(private val trendingMoviesUseCase: Trend
         fetchFavoritesMovieList()
     }
 
-    fun lazyLoadElements() {
-        val pageNumber = _trendingMoviesList.value?.page?.let { it + 1 } ?: 1
-        fetchMovies(Constants.TimeWindow.WEEK.timeWindow, pageNumber = pageNumber)
-    }
-
     fun fetchMovies(
         timeWindow: String = Constants.TimeWindow.WEEK.timeWindow,
         languageRange: String = Constants.DEFAULT_LANGUAGE,
         pageNumber: Int = 1
     ) {
         viewModelScope.launch {
-            trendingMoviesUseCase<TrendingData>(
+
+        }
+        viewModelScope.launch {
+            trendingMoviesUseCase<Flow<PagingData<SeriesResult>>>(
                 scope = viewModelScope,
                 TrendingMovieListUseCase.TrendingMovieDataMP.GetTrendingMovieList(
                     timeWindow,
@@ -67,17 +77,13 @@ class MainViewModel @Inject constructor(private val trendingMoviesUseCase: Trend
                     pageNumber
                 ),
                 onSuccess = { trendingData ->
-                    _trendingMoviesList.value?.let {
-                        it.page = trendingData.page
-                        it.totalPages = trendingData.totalPages
-                        it.results.addAll(trendingData.results)
-                        it.totalResults = trendingData.totalResults
-                    }
-                    if (_trendingMoviesList.value == null) {
-                        _trendingMoviesList.value = trendingData
+                    trendingData.cachedIn(this)
+                    _trendingMoviesList.cachedIn(this)
+                    viewModelScope.launch {
+                        trendingData.collect { _trendingMoviesList.value = it }
                     }
                 },
-                onError = {throwable,response ->
+                onError = { throwable, response ->
                     run {
                         _error.value = ERROR_HANDLING.API_ERROR.errorType
                     }
@@ -87,9 +93,11 @@ class MainViewModel @Inject constructor(private val trendingMoviesUseCase: Trend
     }
 
     fun fetchFavoritesMovieList() = viewModelScope.launch {
-        favoriteMovieUseCase<List<FavoriteMovieData>>(viewModelScope,FavoriteMovieUseCase.GetFavoriteMoviesMP.GetFavoriteMovieList,
-            onSuccess = {movieList -> _favoriteMoviesList.value = movieList},
-            onError = null)
+        favoriteMovieUseCase<List<FavoriteMovieData>>(
+            viewModelScope, FavoriteMovieUseCase.GetFavoriteMoviesMP.GetFavoriteMovieList,
+            onSuccess = { movieList -> _favoriteMoviesList.value = movieList },
+            onError = null
+        )
     }
 
     fun onSearchTextChange(text: String) {
@@ -104,7 +112,7 @@ class MainViewModel @Inject constructor(private val trendingMoviesUseCase: Trend
         }
     }
 
-    fun isNetworkConnected(context: Context) : Boolean{
+    fun isNetworkConnected(context: Context): Boolean {
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
 
@@ -114,26 +122,37 @@ class MainViewModel @Inject constructor(private val trendingMoviesUseCase: Trend
         return connected
     }
 
-    fun updateTrendingDatainNoNetwork() {
-        if (_favoriteMoviesList.value.isNullOrEmpty().not()) {
-            _trendingMoviesList.value = _favoriteMoviesList.value.toTrendingData()
-        }
-    }
+//    fun updateTrendingDatainNoNetwork() {
+//        if (_favoriteMoviesList.value.isNullOrEmpty().not()) {
+//            _trendingMoviesList.value = _favoriteMoviesList.value.toTrendingData()
+//        }
+//    }
 
-    private fun fetchSearchItems(query : String) {
+    private fun fetchSearchItems(query: String) {
         if (query.isNotEmpty() && query.length >= 2) {
             viewModelScope.launch {
-                searchUseCase<TrendingData>(scope = viewModelScope,
+                searchUseCase<TrendingData>(
+                    scope = viewModelScope,
                     SearchUseCase.GetSearchDataMP.GetSearchMovieListMP(query),
-                    onSuccess = {searchMovieList ->
-                        _trendingMoviesList.value =  searchMovieList
+                    onSuccess = { searchMovieList ->
+                        _searchMovieList.value = searchMovieList.results
                     },
-                    onError = null)
+                    onError = null
+                )
+            }
+        } else {
+            viewModelScope.launch {
+                trendingMoviesUseCase<TrendingData>(
+                    viewModelScope,
+                    TrendingMovieListUseCase.TrendingMovieDataMP.GetTrendingMoviesDB,
+                    onSuccess = { movieList -> _searchMovieList.value = movieList.results },
+                    onError = null
+                )
             }
         }
     }
 
-    enum class ERROR_HANDLING(var errorType : String) {
+    enum class ERROR_HANDLING(var errorType: String) {
         API_ERROR("Something went Wrong")
     }
 }

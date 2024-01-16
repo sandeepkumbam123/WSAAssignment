@@ -2,8 +2,10 @@ package com.example.wsaassignment.di
 
 import com.example.wsaassignment.data.repoimpl.FavoriteRepoImpl
 import com.example.wsaassignment.data.repoimpl.MovieListRepoImpl
+import com.example.wsaassignment.data.repoimpl.TrendingPageSourceImpl
 import com.example.wsaassignment.domain.repo.FavoriteMovieRepository
 import com.example.wsaassignment.domain.repo.MovieListDbRepository
+import com.example.wsaassignment.domain.repo.TrendingSeriesPageSource
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -20,4 +22,8 @@ abstract class RepositoryModule {
     @Singleton
     @Binds
     abstract fun binFavoritesDB(repo : FavoriteRepoImpl) : FavoriteMovieRepository
+
+    @Singleton
+    @Binds
+    abstract fun bindTrendingMovieRepo( trendingRepo : TrendingPageSourceImpl) : TrendingSeriesPageSource
 }

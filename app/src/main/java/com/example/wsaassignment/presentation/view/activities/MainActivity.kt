@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import com.example.wsaassignment.data.model.SeriesResult
 import com.example.wsaassignment.presentation.view.compose.SearchBarUI
 import com.example.wsaassignment.presentation.view.compose.TrendingVerticalGrid
-import com.example.wsaassignment.presentation.view.compose.errorBody
 import com.example.wsaassignment.presentation.viewmodel.MainViewModel
 import com.example.wsaassignment.ui.theme.WSAAssignmentTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,15 +46,11 @@ class MainActivity : ComponentActivity() {
                             TrendingVerticalGrid(
                                 viewModel = viewModel,
                                 redirectTo = { redirectTo(it) },
-                                lazyLoad = { viewModel.lazyLoadElements() })
+                                isSearch = false)
                         }
-                    } else {
-                       viewModel.updateTrendingDatainNoNetwork()
-                        TrendingVerticalGrid(redirectTo = { redirectTo(it) }, viewModel = viewModel, lazyLoad = {viewModel.lazyLoadElements()})
                     }
                 }
                 
-                errorBody(viewModel = viewModel)
             }
         }
     }

@@ -3,7 +3,6 @@ package com.example.wsaassignment.data.repoimpl
 import com.example.wsaassignment.data.model.TrendingData
 import com.example.wsaassignment.data.source.RemoteDataSource
 import com.example.wsaassignment.domain.repo.MovieListDbRepository
-import com.example.wsaassignment.util.Constants
 import javax.inject.Inject
 
 class MovieListRepoImpl @Inject constructor(val remoteDataSource: RemoteDataSource) : MovieListDbRepository {

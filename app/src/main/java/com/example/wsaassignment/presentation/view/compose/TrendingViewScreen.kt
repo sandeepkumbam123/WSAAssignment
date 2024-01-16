@@ -25,7 +25,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconToggleButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +39,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.wsaassignment.R
 import com.example.wsaassignment.data.model.SeriesResult
 import com.example.wsaassignment.presentation.view.compose.common.RemoteImage
@@ -88,10 +89,12 @@ fun SetupTrendingItemComponent(
                 )
             }
 
-            FavoriteButton(modifier = Modifier
-                .padding(2.dp)
-                .padding(top = 15.dp)
-                .height(8.dp), viewModel =  viewModel, seriesData =  seriesData)
+            FavoriteButton(
+                modifier = Modifier
+                    .padding(2.dp)
+                    .padding(top = 15.dp)
+                    .height(8.dp), viewModel = viewModel, seriesData = seriesData
+            )
         }
         val nameSeries = seriesData.originalName ?: seriesData.name ?: seriesData.originalTitle
         ?: seriesData.title ?: Constants.BLANK
@@ -118,22 +121,35 @@ fun TrendingVerticalGrid(
     contentPadding: PaddingValues = PaddingValues(5.dp),
     redirectTo: (data: SeriesResult) -> Unit,
     viewModel: MainViewModel,
-    lazyLoad: () -> Unit
+    isSearch: Boolean
 ) {
-    val trendingData by viewModel.trendingMovieList.collectAsState()
-    trendingData?.let {
+
+    if (!isSearch) {
+        val trendingData: LazyPagingItems<SeriesResult> =
+            viewModel.trendingMovieList.collectAsLazyPagingItems()
         LazyVerticalGrid(columns = cells, contentPadding = contentPadding) {
-            items(it.results.size) { item ->
+            items(trendingData.itemCount) { item ->
                 run {
-                    //Lazy load call
-                    if (item == it.results.size - 3) {
-//                        lazyLoad()
+                    trendingData[item]?.let { it1 ->
+                        SetupTrendingItemComponent(
+                            seriesData = it1,
+                            redirectTo = redirectTo,
+                            viewModel = viewModel
+                        )
                     }
+                }
+            }
+        }
+    } else {
+        val searchData = viewModel.serchMovieResult.collectAsStateWithLifecycle()
+        LazyVerticalGrid(columns = cells, contentPadding = contentPadding) {
+            items(searchData.value.size) { item ->
+                run {
                     SetupTrendingItemComponent(
-                        seriesData = it.results[item],
+                        seriesData = searchData.value[item],
                         redirectTo = redirectTo,
                         viewModel = viewModel
-                        )
+                    )
                 }
             }
         }
@@ -161,33 +177,6 @@ fun RatingView(rating: Double) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SearchScreen(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit
-) {
-    SearchBar(
-        query = searchQuery,
-        onQueryChange = onSearchQueryChange,
-        onSearch = {},
-        placeholder = {
-            Text(text = "Search movies")
-        },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                tint = MaterialTheme.colorScheme.onSurface,
-                contentDescription = null
-            )
-        },
-        trailingIcon = {},
-        content = {},
-        active = true,
-        onActiveChange = {},
-        tonalElevation = 0.dp
-    )
-}
 
 @Composable
 fun FavoriteButton(
@@ -196,7 +185,7 @@ fun FavoriteButton(
     viewModel: MainViewModel,
     seriesData: SeriesResult
 ) {
-    val favoriteMovies  by viewModel.favoriteMovieDataList.collectAsStateWithLifecycle()
+    val favoriteMovies by viewModel.favoriteMovieDataList.collectAsStateWithLifecycle()
     val isFavorite = favoriteMovies.find { it.seriesData.id == seriesData.id } != null
     IconToggleButton(
         checked = isFavorite,
@@ -230,7 +219,7 @@ fun SearchBarUI(viewModel: MainViewModel, redirectTo: (data: SeriesResult) -> Un
         onQueryChange = viewModel::onSearchTextChange,
         onSearch = viewModel::onSearchTextChange,
         active = isSearching,
-        onActiveChange = {viewModel.onToogleSearch()},
+        onActiveChange = { viewModel.onToogleSearch() },
         modifier = Modifier.padding(2.dp),
         placeholder = {
             Text(text = "Search")
@@ -242,17 +231,20 @@ fun SearchBarUI(viewModel: MainViewModel, redirectTo: (data: SeriesResult) -> Un
         TrendingVerticalGrid(
             viewModel = viewModel,
             redirectTo = redirectTo,
-            lazyLoad = { viewModel.lazyLoadElements() })
+            isSearch = true
+        )
     }
 }
 
 @Composable
 fun errorBody(viewModel: MainViewModel) {
     val errorMessage = viewModel.error.collectAsStateWithLifecycle()
-    Box(modifier = Modifier
-        .padding(5.dp, 5.dp)) {
+    Box(
+        modifier = Modifier
+            .padding(5.dp, 5.dp)
+    ) {
         errorMessage.value.let {
-            Text(text = it, modifier =  Modifier, style = labelSmall )
+            Text(text = it, modifier = Modifier, style = labelSmall)
 
         }
     }
